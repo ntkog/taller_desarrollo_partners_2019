@@ -1,0 +1,3 @@
+object_detection_tensorflow/python/workshop/2_handson_running_basic_object_detection/object_detection/*
+object_detection_tensorflow/javascript/inspeccion/*
+**/node_modules/**

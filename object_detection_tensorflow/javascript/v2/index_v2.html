@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@1.1.0/dist/coco-ssd.min.js"></script>
+  <title>Real Time Object Detection</title>
+</head>
+<body>
+  <div style="text-align:center">
+    <h1>Tensorflow.js Real Time Object Detection</h1>
+    <video hidden id="vid" width="500" height="500"></video>
+    <canvas id="canvas" width="500" height="500"></canvas>
+  </div>
+  <script src="detection_v2.js" charset="utf-8"></script>
+  <script>
+    var video = document.getElementById("vid");
+    const canvas = document.getElementById("canvas");
+    const canvas_opts = { desynchronized: true };
+    const ctx = canvas.getContext("2d", canvas_opts);
+    const wsUrl = 'wss://1c6d0cab.ngrok.io';
+    try {
+      const socket =new WebSocket(wsUrl);
+      webcam_init(video);
+      predictWithCocoModel(video,ctx,socket);
+    } catch(err) {
+      alert(`Cannot connect to: ${wsUrl}`);
+      console.log(err);
+    }
+  </script>
+</body>
+</html>

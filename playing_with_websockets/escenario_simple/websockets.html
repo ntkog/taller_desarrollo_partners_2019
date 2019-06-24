@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Simple update location from API results</title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #mainWindow {
+        padding: 0.5em;
+        background-color: #fff;
+      }
+      #mainWindow p,
+      #uploadForm {
+        display: block;
+        padding: 0.1em;
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.11/"></script>
+
+    <script>
+      require([
+        "esri/config",
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/GraphicsLayer",
+        "esri/PopupTemplate",
+        "esri/Graphic"
+      ], function(
+        esriConfig,
+        Map,
+        MapView,
+        GraphicsLayer,
+        PopupTemplate,
+        Graphic
+      ) {
+        var map = new Map({
+          basemap: "dark-gray"
+        });
+
+        var view = new MapView({
+          center: [-4.4741536666667,36.7138665],
+          zoom: 12,
+          map: map,
+          container: "viewDiv"
+        });
+
+        var layer = new GraphicsLayer({
+          graphics : []
+        });
+
+        map.add(layer);
+
+        var popupTemplate = new PopupTemplate({
+          title: "Tracking Position",
+          content: "{*}"
+        });
+
+        var markerSymbol = {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          color: [226, 119, 40],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [255, 255, 255],
+            width: 2
+          }
+        };
+
+        function graphicFromData(obj) {
+          let point = {
+            type : "point",
+            x : obj.lon,
+            y : obj.lat
+          };
+          let position = new Graphic({
+            geometry: point,
+            popupTemplate : popupTemplate,
+            symbol : markerSymbol,
+            attributes : {
+              ObjectID : obj.ObjectID,
+              time : new Date(obj.time).getTime(),
+              lat : obj.lat,
+              lon : obj.lon
+            }
+          });
+
+          return position;
+        }
+
+        function errorHandler(error) {
+          document.getElementById("upload-status").innerHTML =
+            "<p style='color:red;max-width: 500px;'>" + error.message + "</p>";
+        }
+
+        function updateLayer(graphic) {
+          // Porque se trata del mismo punto
+          layer.removeAll();
+          layer.add(graphic);
+        };
+
+        view.when(() => {
+          window.empty = true;
+          const socket = new WebSocket('ws://localhost:8000');
+          socket.addEventListener('message', function (event) {
+            updateLayer(graphicFromData(JSON.parse(event.data)));
+          });
+        })
+
+
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
