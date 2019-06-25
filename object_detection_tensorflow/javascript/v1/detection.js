@@ -1,4 +1,4 @@
-const socket = new WebSocket('wss://1c6d0cab.ngrok.io');
+const socket = new WebSocket('ws://localhost:8000');
 
 function webcam_init(video) {
   navigator.mediaDevices

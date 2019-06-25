@@ -8,6 +8,6 @@ wss.on('connection', function connection(ws) {
   });
   setInterval((ws) => {
     ws.send(JSON.stringify({...DATA.shift(), ObjectID : 1}));
-  },2000,ws);
+  },1000,ws);
 
 });
