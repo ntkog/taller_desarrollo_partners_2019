@@ -18,7 +18,7 @@
     const canvas = document.getElementById("canvas");
     const canvas_opts = { desynchronized: true };
     const ctx = canvas.getContext("2d", canvas_opts);
-    const wsUrl = 'wss://1c6d0cab.ngrok.io';
+    const wsUrl = 'ws://localhost:8000';
     try {
       const socket =new WebSocket(wsUrl);
       webcam_init(video);

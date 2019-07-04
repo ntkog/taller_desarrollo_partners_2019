@@ -17,7 +17,7 @@ npm i -g fast-xml-parser
 koop new app camaras
 cd camaras
 mkdir csvs
-koop add provider ntkog/koop-provider-csv
+koop add provider @ntkog/koop-provider-csv
 ```
 
 ## Get Data
@@ -35,6 +35,10 @@ cp m30.csv csvs
 ```
 
 ## Edit **config/default.json** properly
+
+```bash
+curl -sS "https://raw.githubusercontent.com/ntkog/koop-provider-csv/master/config/example.json" -o config/default.json
+```
 
 ## run koopjs
 
