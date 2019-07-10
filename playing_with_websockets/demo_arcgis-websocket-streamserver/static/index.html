@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1, maximum-scale=1,user-scalable=no"
+    />
+    <title>StreamLayer - 4.11</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: #fff;
+        overflow: hidden;
+      }
+
+      .controls {
+        margin-left: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+
+      #viewDiv {
+        height: 75%;
+        width: 100%;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.11/"></script>
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/StreamLayer",
+        "esri/layers/GraphicsLayer",
+        "esri/geometry/Polygon",
+        "esri/Graphic"
+      ], function(Map, MapView, StreamLayer, GraphicsLayer, Polygon, Graphic) {
+        var streamLayer, streamLayerView;
+
+        /***************************************
+         * Set up map view with initial extent
+         ***************************************/
+        var map = new Map({
+          basemap: "gray"
+        });
+
+        var mapView = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-4.4741536666667,36.7138665],
+          zoom: 12
+        });
+
+        var graphicsLayer = new GraphicsLayer();
+        map.add(graphicsLayer);
+
+        // Connect click events to UI buttons
+        document
+          .getElementById("toggleStreamLayerButton")
+          .addEventListener("click", toggleStreamLayer);
+        document
+          .getElementById("toggleGeometryDefinitionButton")
+          .addEventListener("click", toggleGeometryDefinition);
+
+        /*************************************************
+         *
+         * Functions to add and remove Stream Layer
+         *
+         *************************************************/
+        function toggleStreamLayer() {
+          if (streamLayer) {
+            removeStreamLayer();
+          } else {
+            addStreamLayer();
+          }
+        }
+
+        function addStreamLayer() {
+          // URL to stream service
+          var svcUrl = document.getElementById("streamUrlText").value;
+
+          // Construct Stream Layer
+          streamLayer = new StreamLayer({
+            url: svcUrl,
+            purgeOptions: {
+              displayCount: 10000
+            }
+          });
+
+          map.add(streamLayer);
+
+          // When graphics controller created, register listeners for events
+          mapView.whenLayerView(streamLayer).then(function(layerView) {
+            streamLayerView = layerView;
+            processConnect();
+
+            layerView.watch("connectionStatus", function(value) {
+              if (value === "connected") {
+                processConnect();
+              } else {
+                processDisconnect();
+              }
+            });
+
+            // GeometryDefinitionChange event
+            streamLayer.watch(
+              "geometryDefinition",
+              processGeometryDefinitionChange
+            );
+          });
+        }
+
+        function removeStreamLayer() {
+          if (streamLayer) {
+            map.remove(streamLayer);
+            streamLayer = null;
+            graphicsLayer.removeAll();
+            processDisconnect();
+          }
+        }
+
+        /*********************************************************
+         *
+         * Stream layer event handlers
+         *
+         *********************************************************/
+        function processConnect() {
+          document.getElementById("toggleStreamLayerButton").value =
+            "Remove Stream Layer";
+          document.getElementById("streamUrlText").style.backgroundColor =
+            "#008000";
+          document.getElementById("toggleGeometryDefinitionButton").value =
+            "Apply GeometryDefinition";
+          document.getElementById(
+            "divGeometryDefinitionControls"
+          ).style.display = "block";
+        }
+
+        function processDisconnect() {
+          document.getElementById("toggleStreamLayerButton").value =
+            "Add Stream Layer";
+          document.getElementById("streamUrlText").style.backgroundColor =
+            "#8b0000";
+          document.getElementById(
+            "divGeometryDefinitionControls"
+          ).style.display = "none";
+        }
+
+        function processGeometryDefinitionChange(newGeometryDefinition) {
+          // The event contains a geometryDefinition property that is the current geometryDefinition set on the service
+          // update map graphic to show current geometryDefinition
+
+          graphicsLayer.removeAll();
+          if (newGeometryDefinition) {
+            graphicsLayer.add(
+              new Graphic({
+                geometry: Polygon.fromExtent(newGeometryDefinition),
+                symbol: {
+                  type: "simple-fill", // autocasts as new SimpleFillSymbol()
+                  style: "none",
+                  outline: {
+                    // autocasts as new SimpleLineSymbol()
+                    color: [5, 112, 176],
+                    width: 2
+                  }
+                }
+              })
+            );
+          }
+        }
+
+        /************************************************
+         *
+         * Functions to set and clear geometryExpression
+         *
+         ************************************************/
+        function toggleGeometryDefinition() {
+          var currentGeometryDefinition =
+            streamLayer && streamLayer.geometryDefinition
+              ? streamLayer.geometryDefinition.clone()
+              : null;
+
+          if (!currentGeometryDefinition) {
+            // Set geometryDefinition
+            var extent = mapView.extent.clone();
+            setGeometryDefinition(extent.expand(0.9));
+            document.getElementById("toggleGeometryDefinitionButton").value =
+              "Clear GeometryDefinition";
+          } else {
+            setGeometryDefinition(null);
+            document.getElementById("toggleGeometryDefinitionButton").value =
+              "Apply GeometryDefinition";
+          }
+        }
+
+        // Set geometryDefinition on stream layer. Setting to null clears geometryDefinition
+        function setGeometryDefinition(bbox) {
+          streamLayer.geometryDefinition = bbox;
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+    <div class="controls esri-widget">
+      <span>Stream service url: </span
+      ><input
+        type="text"
+        id="streamUrlText"
+        value="https://geoeventsample1.esri.com:6443/arcgis/rest/services/LABus/StreamServer"
+        style="color:#ffffff; width:600px; background-color: #8b0000"
+      /><br />
+      <input
+        type="button"
+        id="toggleStreamLayerButton"
+        value="Add Stream Layer"
+      />
+    </div>
+    <div
+      id="divGeometryDefinitionControls"
+      class="controls esri-widget"
+      style="margin-left: 20px; display: none"
+    >
+      <span
+        >Filter messages by map extent (Zoom to desired extent to set
+        GeometryDefinition):
+      </span>
+      <input
+        type="button"
+        id="toggleGeometryDefinitionButton"
+        value="Apply GeometryDefinition"
+      /><br />
+    </div>
+  </body>
+</html>

@@ -1,8 +1,8 @@
 {
-  "name": "static",
+  "name": "caca",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "init.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@amcharts/amcharts4": "^4.4.7",
-    "@types/arcgis-js-api": "^4.11.0"
+    "arcgis-websockets-streamserver": "github:ntkog/arcgis-websockets-streamserver"
   }
 }
