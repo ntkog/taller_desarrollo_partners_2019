@@ -2,6 +2,7 @@
 
 # Requirements
 
+- [@koopjs/cli](https://www.npmjs.com/package/@koopjs/cli)
 - [fast-xml-parser](https://www.npmjs.com/package/fast-xml-parser)
 - [jq](https://stedolan.github.io/jq/)
 
@@ -9,6 +10,7 @@
 
 ```bash
 npm i -g fast-xml-parser
+npm install -g @koopjs/cli
 ```
 
 ## Scaffolding
