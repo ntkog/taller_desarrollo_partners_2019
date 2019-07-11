@@ -14,6 +14,7 @@ npm i -g fast-xml-parser
 ## Scaffolding
 
 ```bash
+npm i
 koop new app camaras
 cd camaras
 mkdir csvs
