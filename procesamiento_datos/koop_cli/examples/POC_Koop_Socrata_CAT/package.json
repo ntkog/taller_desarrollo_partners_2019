@@ -11,7 +11,7 @@
     "config": "^3.0.0",
     "geojson-rewind": "^0.3.1",
     "koop": ">=3",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.19",
     "node-fetch": "^2.3.0"
   },
   "author": "Jorge Barrachina",
